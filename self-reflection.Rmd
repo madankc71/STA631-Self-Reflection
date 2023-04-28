@@ -20,6 +20,7 @@ library(tidyverse)
 library(tidymodels)
 library(statsr)
 ```
+
 # Objective 1: Describe probability as a foundation of statistical modeling, including inference and maximum likelihood estimation
 
 Probability is essential to statistical modeling because it provides a way to quantify uncertainty and randomness. In statistical inference, probability is used to construct confidence intervals or hypothesis tests to make conclusions about a population based on a sample. Maximum likelihood estimation is a common method of estimating the parameters of a statistical model, and it involves finding the parameter values that make the observed data most likely to have occurred based on probability distributions.
@@ -472,16 +473,9 @@ hfi %>%
 
 
 # Objective 2: Determine and apply the appropriate generalized linear model for a specific data context
-
-
-
-
-
-
-
-# Customer Churn Prediction
+## Customer Churn Prediction
 ## Introduction
-In this project, we will be analyzing a telecom churn dataset. The objective of the analysis is to develop a model to predict whether a customer will churn or not. The dataset consists of 7043 observations and 23 variables. The dataset contains a mix of categorical and continuous variables.
+In this project, we will be analyzing a telecom churn dataset. The objective of the analysis is to develop a model to predict whether a customer will churn or not. The dataset consists of 7043 observations and 23 variables. The dataset contains a mix of categorical and continuous variables. I have taken the dataset from kaggle: https://github.com/madankc71/Customer-Churn-Prediction
 
 Loading the required package and reading the dataset
 ```{r}
@@ -570,7 +564,7 @@ logistic_reg <- glm(Churn ~ SeniorCitizen + tenure + MultipleLines + Contract + 
 summary(logistic_reg)
 ```
 
-
+# Objective 3: Conduct model selection for a set of candidate models
 ## Data Partition and Modelling
 In this chunk of code, the necessary packages are loaded, and the telecom data is partitioned into a training and testing set. The leave column is created as a factor with two levels, "Churn" and "Not Vhurn" and the "Churn" column is removed. The glm function from caret is used to fit a logistic regression model to the training set. The model's performance is then evaluated using confusion matrices for both the training and testing sets.
 ```{r}
@@ -684,5 +678,15 @@ However, the prediction on the test data decreases to 84.15%.
 Therefore, we are selecting decision tree with data partition into 80/20 (train/test) among logistic regression with data partition and cross validation and decision tree with data partition and cross validation.
 The selected model has 86.6% accuracy in train and 86.72% accuracy in the test data.
 
+# Objective 4: Communicate the results of statistical models to a general audience
 
+Through the examples described above and the regular discussion with colleagues in the class, I think I can communicate the results of statistical models to a general audience.
+
+
+# Objective 5: Use programming software (i.e., R) to fit and assess statistical models
+Throughout the semester, we practiced the statistical modelling and regression anaysis in R programming. I believe this has honed my skills in R programming. The above examples are also written in R programming.
+
+
+I believe I have meet all the five objectives in this course. However, I still need to hone my skills on modelling and regression. The course STA 631 has helped me alot and I am able to model and analze regression statistically. 
+Overall, I would like to thank Professor Dr. Dykes for teaching, guidance and support. I am thankful for always making the class amazing.
 
