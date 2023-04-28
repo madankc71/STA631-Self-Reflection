@@ -1,0 +1,688 @@
+---
+title: "Self Reflection - STA 631"
+author: "Madan K C"
+date: "2023-04-28"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)  
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(tidymodels)
+library(statsr)
+```
+# Objective 1: Describe probability as a foundation of statistical modeling, including inference and maximum likelihood estimation
+
+Probability is essential to statistical modeling because it provides a way to quantify uncertainty and randomness. In statistical inference, probability is used to construct confidence intervals or hypothesis tests to make conclusions about a population based on a sample. Maximum likelihood estimation is a common method of estimating the parameters of a statistical model, and it involves finding the parameter values that make the observed data most likely to have occurred based on probability distributions.
+
+### 1.1 Simple Linear Regression of Human Freedom Index dataset:
+Loading Human Freedom Index dataset from URL and assigning it into a dataframe named hfi:
+```{r, load data}
+hfi <- readr::read_csv("https://www.openintro.org/data/csv/hfi.csv")
+head(hfi)
+```
+
+1. What are the dimensions of the dataset? What does each row represent?
+```{r}
+dim(hfi) # shows the dimensions of the dataset, which is 1458*123
+```
+The dim() shows the dimensions of the hfi data frame, which is 1458*123.
+
+
+The dataset spans a lot of years. We are only interested in data from year 2016. 
+
+Create a new R code chunk. Filter the data hfi data frame for year 2016, and 
+Assign the result to a data frame named hfi_2016.
+
+```{r}
+library(dplyr)
+hfi_2016 <- filter(hfi, year == 2016)
+```
+
+Alternative method using subset to filter HFI data frame for the year 2016
+```{r}
+hfi_2016 <- subset(hfi, year == 2016)
+```
+
+
+2. What type of plot would you use to display the relationship between the personal freedom score, pf_score, and pf_expression_control? Create a new R code chunk and plot this relationship using the variable pf_expression_control as the predictor.
+
+=> 
+To display the relationship between the personal freedom score and pf_expression_control, we can use a scatter plot with pf_expression_control on the x-axis and pf_score on the y-axis.
+
+```{r}
+library(ggplot2)
+ggplot(hfi_2016, aes(x = pf_score, y = pf_expression_control)) + geom_point() # In the hfi_2016 data frame
+```
+
+3. Does the relationship look linear? If you knew a country’s pf_expression_control, or its score out of 10, with 0 being the most, of political pressures and controls on media content, would you be comfortable using a linear model to predict the personal freedom score?
+
+=> From the scatter plot above, we can say that the relationship between pf_expression_control and pf_score is linear. 
+In such scenario, I think if the relationship is linear then linear model can be used to predict the personal freedom score. However, if it is not linear, then we have to consider the variables. 
+
+
+### Sum of squared residuals
+4. Using statsr::plot_ss, choose a line that does a good job of minimizing the sum of squares. Run the function several times. What was the smallest sum of squares that you got? How does it compare to your neighbour’s?
+
+=> The smallest sum of squares that I got is :
+
+Sum of Squares:  102.213
+
+
+### The linear model
+```{r}
+m1 <- lm(pf_score ~ pf_expression_control, data = hfi_2016)
+m1
+```
+The first argument in the function lm() is a formula that takes the form y ~ x. Here it can be read that we want to make a linear model of pf_score as a function of pf_expression_control. The second argument specifies that R should look in the hfi data frame to find the two variables.
+
+
+The output of lm is an object that contains all of the information we need about the linear model that was just fit. We can access this information using broom::tidy
+
+```{r}
+broom::tidy(m1)
+```
+
+Let’s consider this output piece-by-piece. First, the formula used to describe the model is shown at the top, in what’s displayed as the “Call”. After the formula you find the five-number summary of the residuals. The “Coefficients” table shown next is key; its first column displays the linear model’s y-intercept and the coefficient of pf_expression_control. With this table, we can write down the least squares regression line for the linear model:
+
+$$
+\hat{y} = 4.28 + 0.542 \times pf\_expression\_control
+$$
+
+Using this equation…
+
+5. Interpret the y-intercept.
+=> The y-intercept of the regression line is 3.725. This means that if the value of pf_expression_control is zero, the predicted value of pf_score would be 3.725. 
+
+6. Interpret the slope
+=> The slope of the regression line is 0.606. This means that for every one unit increase in pf_expression_control, the predicted value of pf_score would increase by 0.606 units on average, holding all other variables constant. 
+
+### Overall model fit
+
+
+Using your {dplyr} skills, obtain the correlation coefficient between pf_expression_control and pf_score.
+
+```{r}
+correlation <- cor(hfi_2016$pf_expression_control, hfi_2016$pf_score)
+correlation
+```
+
+1. What does this value mean in the context of this model?
+The value of the correlation coefficient indicates the strength and direction of the linear relationship between the two variables. In this case, a positive correlation coefficient (0.8450646) indicates that higher levels of pf_expression_control are associated with higher levels of pf_score.
+
+```{r}
+broom::glance(m1)
+```
+
+2. What is the value of for this model?
+
+=> The output of glance(m1) provides information on the model fit, including the R-squared value. The R-squared value of the model is 0.7141342 and the adjusted R-squared value is 0.7123476
+
+3. What does this value mean in the context of this model?
+
+=> R-squared represents the proportion of variability in the response variable that is explained by the explanatory variable. In this case, an R-squared value of 0.7141342 means that approximately 71.4% of the variability in pf_score is explained by the linear relationship with pf_expression_control.
+
+4. Fit a new model that uses pf_expression_control to predict hf_score, or the total human freedom score. Using the estimates from the R output, write the equation of the regression line. What does the slope tell us in the context of the relationship between human freedom and the amount of political pressure on media content?
+```{r}
+m2 <- lm(hf_score ~ pf_expression_control, data = hfi_2016)
+summary(m2)
+```
+=> The equation of the regression line for the new model is:
+
+hf_score = 5.0534 + 0.36843 * pf_expression_control
+
+This means that for every 1 unit increase in pf_expression_control, we expect a country's mean human freedom score to increase by 0.36843 units, on average. The intercept (5.0534) represents the estimated mean human freedom score for countries with a pf_expression_control value of 0. The slope (0.36843) represents the estimated change in the mean human freedom score for a 1-unit increase in pf_expression_control.
+
+### Prediction and prediction errors
+
+I will first create a scatterplot with the least squares line for m1 laid on top.
+
+Copy-and-paste the entire code chunk of the scatterplot you created in Day 1 of this activity below.
+Add a layer to this (remember how {ggplot2} represents adding various data layers to plots) that shows a smooth line geometry.
+In this layer, be sure to specify the method as "lm" and do not display confidence intervals around your bands (hint: look at the help documentation for the layer you added).
+
+```{r}
+library(ggplot2)
+ggplot(hfi_2016, aes(x = pf_score, y = pf_expression_control)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+6. If someone saw the least squares regression line and not the actual data, how would they predict a country’s personal freedom school for one with a 3 rating for pf_expression_control?
+
+=> To predict a country's personal freedom score for one with a 3 rating for pf_expression_control, we can use the equation of the regression line obtained earlier:
+
+hf_score = 5.05340 + 0.36843 * pf_expression_control
+
+Substituting the value of pf_expression_control as 3, we get:
+
+hf_score = 5.05340 + 0.36843 * 3 = 6.15869
+
+So the predicted hf_score for a country with a 3 rating for pf_expression_control is 6.15869.
+
+
+7. Is this an overestimate or an underestimate, and by how much? In other words, what is the individual residual value for this prediction?
+
+=> For countries with a pf_expression_control of 0 (those with the largest amount of political pressure on media content), we expect their mean personal freedom score to be 4.28.
+
+For every 1 unit increase in pf_expression_control, we expect a country’s mean personal freedom score to increase 0.542 units.
+
+For pf_expression_control as 3, the hf_score is around 4.28 +2*0.542 = 5.364.
+
+As the actual value is lower than the predicted value (5.364<6.15869), this is underestimate.
+
+
+### Model diagnostics
+
+To assess whether the linear model is reliable, we should check for (1) linearity, (2) nearly normal residuals, and (3) constant variability. Note that the normal residuals is not really necessary for all models (sometimes we simply want to describe a relationship for the data that we have or population-level data, where statistical inference is not appropriate/necessary).
+
+In order to do these checks we need access to the fitted (predicted) values and the residuals. We can use broom::augment to calculate these.
+
+```{r}
+library(broom)
+m1_aug <- augment(m1)
+m1_aug
+```
+
+
+```{r}
+ggplot(data = m1_aug, aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  xlab("Fitted values") +
+  ylab("Residuals")
+```
+
+8. Is there any apparent pattern in the residuals plot? What does this indicate about the linearity of the relationship between the two variables?
+
+=> There is random scatter and large residual value for low fitted values and the random scatter is decreasing as the fitted values are increased. 
+
+Additionally, we can say that there is the linear relationship between the two variables.
+
+
+### Nearly normal residuals: 
+
+To check this condition, we can look at a histogram of the residuals.
+
+Create a new R code chunk and type the following code.
+
+```{r}
+ggplot(data = m1_aug, aes(x = .resid)) +
+  geom_histogram(binwidth = 0.25) +
+  xlab("Residuals")
+```
+
+
+
+9. Based on the histogram, does the nearly normal residuals condition appear to be violated? Why or why not?
+
+=> As histogram is approximately bell-shaped and centered around 0, I think the nearly normal residuals condition has not been violated.
+
+#### Constant variability:
+
+10. Based on the residuals vs. fitted plot, does the constant variability condition appear to be violated? Why or why not?
+
+=> We can see that the spread of residuals appears to be fairly consistent across all levels of fitted values, with the majority of the histograms showing a roughly symmetric and unimodal distribution of residuals. Therefore, we might conclude that the condition of constant variability is met.
+
+
+## 1.2 Multiple Linear Regression
+
+The data we’re working with is from the OpenIntro site: https://www.openintro.org/data/csv/hfi.csv
+
+Create a new R code chunk to read in the linked CSV file.
+Rather than downloading this file, uploading to RStudio, then reading it in, explore how to load this file directly from the provided URL with readr::read_csv ({readr} is part of {tidyverse} so you do not need to load/library it separately).
+Assign this data set into a data frame named hfi (short for “Human Freedom Index”).
+
+```{r load_data, warning=FALSE}
+hfi <- readr::read_csv("https://www.openintro.org/data/csv/hfi.csv")
+```
+
+```{r}
+head(hfi)
+```
+
+Is this an observational study or an experiment?
+
+=> Based on the description on the Human Freedom Index page, this is an observational study.
+
+
+2. You will need to create appropriate univariate graphs to help in answering this:
+
+Describe the distribution of pf_score Is the distribution skewed? Are there any other interesting/odd features (outliers, multiple peaks, etc.)? What does that tell you about countries’ personal freedoms? Is this what you expected to see? Why, or why not?
+
+=> 
+```{r warning=FALSE}
+library(ggplot2)
+ggplot(hfi, aes(pf_score)) +
+  geom_histogram(fill = "lightblue", color = "black") +
+  labs(x = "Personal Freedom Score", y = "Frequency", 
+       title = "Distribution of Personal Freedom Score")
+```
+From the histogram, we can see that the distribution of pf_score is roughly symmetric, with a peak around 7.5. There are a few countries with very low personal freedom scores, which appear as outliers in the plot. This tells us that while most countries have relatively high personal freedom scores, there are a few countries where personal freedoms are severely restricted.
+
+3. Excluding pf_score, select two other numeric variables (hint: look for <dbl> or <int> designations) and describe their relationship with each other using an appropriate visualization.
+
+=> To describe the relationship between two other numeric variables, we can create a scatterplot. For example, let's look at the relationship between ef_score (economic freedom score) and hf_score (human freedom score):
+```{r warning=FALSE}
+ggplot(hfi, aes(ef_score, hf_score)) +
+  geom_point(color = "blue") +
+  labs(x = "Economic Freedom Score", y = "Human Freedom Score", 
+       title = "Relationship between Economic and Human Freedom Scores")
+```
+
+From the scatterplot, we can see that there is a strong positive relationship between economic freedom score and human freedom score. Countries with higher economic freedom scores tend to also have higher human freedom scores. This is what we might expect, as economic freedoms are often considered to be an important component of overall human freedom.
+
+### Pairwise relationships
+
+
+Review how you described this model in Activity 2. - What were your parameter estimates (i.e., the $\beta$s)? How did you interpret these and what did they imply for this scenario? - How good of a fit was this model? What did you use to assess this?
+
+For this activity, we will begin using the two other scores variables (i.e., hf_score and ef_score) to describe the patterns in pf_score. Take a moment to think about what this previous sentence means:
+
+What does this mean from a statistical point of view?
+What does this mean from a “real world” point of view?
+Now, we will obtain graphical and numerical summaries to describe the pairwise relationships.
+
+Create a new R code chunk and type the following, then run your code chunk or knit your document.
+
+```{r warning=FALSE}
+library(GGally)
+library(dplyr)
+hfi %>% 
+  select(ends_with("_score")) %>% 
+  ggpairs()
+```
+Note that a warning message (really a list of warning messages) will display in your Console and likely under your R code chunk when you knit this report. To suppress warning messages from displaying after this specific R code chunk, add the follow inside the curly brackets ({r }) at the top of your R code chunk (notice the preceding comma): , warning=FALSE.
+
+
+1. For each pair of variables, how would you describe the relationship graphically? Do any of the relationships look linear? Are there any interesting/odd features (outliers, non-linear patterns, etc.)?
+
+=>
+
+When creating a scatterplot matrix using the ggpairs function, we can examine the pairwise relationships between all numeric variables in the hfi dataset. The graphical descriptions of the pairwise relationships are as follows:
+
+The relationship between pf_score and hf_score appears to be linear, with a positive slope.
+
+The relationship between pf_score and ef_score is weakly linear.
+
+The relationship between hf_score and ef_score is linear, with a positive slope.
+
+
+2. For each pair of variables, how would you describe the relationship numerically?
+
+=>
+
+The correlation coefficient between pf_score and hf_score is 0.943, indicating a strong positive linear relationship.
+
+The correlation coefficient between pf_score and ef_score is 0.633, indicating a moderate positive linear relationship.
+
+The correlation coefficient between hf_score and ef_score is 0.855, indicating a strong positive linear relationship.
+
+
+Aside, if we use both hf_score and ef_score to describe the patterns in pf_score, hopefully you noticed that hf_score and ef_score are collinear (correlated). Essentially, this means that adding more than one of these variables to the model would not add much value to the model. We will talk more on this issue in Activity 4 (other considerations in regression models). For the time being, we will simply continue ahead.
+
+### The multiple linear regression model
+
+You will now fit the following model:
+
+Create a new R code chunk and type the following, then run your code chunk or knit your document.
+
+```{r}
+library(broom)
+m_hr_ef <- lm(pf_score ~ hf_score + ef_score, data = hfi)
+tidy(m_hr_ef)
+```
+6. Using your output, write the complete estimated equation for this model. Remember in Activity 2 that this looked like:
+
+y_hat = 1.464213e-11	+ (2.000000e+00)*hf_score + (-1.000000e+00)*ef_score + Error
+
+7. For each of the estimated parameters (the y-intercept, and slope associated with each explanatory variable - three total), interpret these values in the context of this problem. That is, what do they mean for a “non-data” person?
+
+=>
+
+The intercept (or y-intercept) is estimated to be 1.46e-11. This represents the expected value of the pf_score when both hf_score and ef_score are equal to 0. In other words, if a player had no heart function score and no exercise function score, their predicted physical function score would be very close to 0.
+
+The estimated coefficient for hf_score is 2.0. This means that for every unit increase in the hf_score, the predicted pf_score will increase by 2 units, holding ef_score constant. Therefore, a player with a higher heart function score would be expected to have a higher physical function score, all else being equal.
+
+The estimated coefficient for ef_score is -1.0. This means that for every unit increase in the ef_score, the predicted pf_score will decrease by 1 unit, holding hf_score constant. Therefore, a player with a higher exercise function score would be expected to have a lower physical function score, all else being equal.
+
+
+## Challenge: 3-D plots
+
+In ISL, the authors provided a 3-D scatterplot with a plane that represents the estimated model. Do some internet sluething to minimally produce a 3-D scatterplot (you do not need to include the plane). Ideally, this would be something that plays nicely with (looks simlilar to) {ggplot2}.
+
+Create a new R code chunk and add your code to create this plot.
+=>
+
+```{r}
+#library(plotly)
+#plot_ly(data = hfi, x = ~hf_score, y = ~ef_score, z = ~pf_score, type = "scatter3d", mode = "markers")
+```
+
+The 3-D scatterplot allows us to visualize the relationship between three variables, which is not possible with the GGally::ggpairs output. It also allows us to rotate and interact with the plot, which can help us gain a better understanding of the relationship between the variables. However, it can be difficult to see the relationship between the variables with a 3-D scatterplot, especially if the data points are overlapping or if there are a large number of data points. The GGally::ggpairs output allows us to see the relationship between all pairs of variables in one plot, making it easier to see patterns and relationships between the variables. However, it can be difficult to interpret when there are a large number of variables or if there are many outliers in the data
+
+```{r}
+#library(plotly)
+#plotly::ggplotly(data = hfi, x = ~hf_score, y = ~ef_score, z = ~pf_score, type = "scatter3d", mode = "markers")
+```
+
+
+### Is One Predictor Useful?
+
+Filtering the data of the year 2016 only
+```{r}
+hfi_2016 <- filter(hfi, year == 2016)
+```
+
+
+Review any visual patterns and then fit the MLR model
+```{r warning=FALSE}
+# review any visual patterns
+hfi_2016 %>% 
+  select(pf_score, pf_expression_influence, pf_expression_control) %>% 
+  ggpairs()
+#fit the mlr model
+m_pf <- lm(pf_score ~ pf_expression_influence + pf_expression_control, data = hfi_2016)
+tidy(m_pf)
+```
+
+The correlation values means that the variables (pf_expression_influence and pf_expression_control) are strongly correlated to pf_score.
+
+
+###Is there a relationship between the response and predictors?
+We visually assessed if there appeared to be a linear relationship between the response and each predictor variable (along with providing a measurement of the strength and direction of that relationship if it is linear). Now we would like to assess if this relationship is “note worthy”. That is, is there overwhelming evidence that at least one of the slopes associated with this MLR model exists (or is not zero). If a slope is zero (e.g., if beta1 = 0), that would indicate no relationship.
+
+We can do this by testing the overall model. The statistical hypotheses that we are testing are:
+  H0 : beta1 = beta2 = 0 
+  Ha : At least one beta_j is not zero, for j =1, 2
+ 
+
+From your reading, this hypothesis test is performed using the F-statistic which has two degrees of freedom associated with it.
+
+Create a new R code chunk and type the following code.
+
+```{r relationship}
+summary(m_pf)
+```
+The p-value is less than alpha (0.05), so we should reject the null hypothesis. Therefore, at least one of the variables in this model is useful, so either pf_expression_influence or pf_expression_control.
+
+
+The standard error of the two variables differ by .008. 
+
+
+### Deciding on Important Variables
+The 'pf_expression_control' has a lower p-value so I think it is more important than 'pf_expression_influence'.
+
+
+### Model Fit
+```{r fit}
+glance(m_pf)
+```
+The R-squared value is 0.7266672 which means that this model improves the prediction accuracy by 72.67% over using the average of `pf_score`. The r-squared value of the single linear regression model is 0.7141342 so this multiple linear regression model has an improved accuracy. 
+
+
+###Linearity: 
+You already checked if the relationship between pf_score and pf_expression_influence and between pf_score and pf_expression_control is linear using. We should also verify this condition with a plot of the residuals vs. fitted (predicted) values once we have fit a MLR model.
+```{r plot_residuals}
+# obtain fitted values and residuals
+m_pf_aug <- augment(m_pf)
+# plot fitted values and residuals
+ggplot(data = m_pf_aug, aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  xlab("Fitted values") +
+  ylab("Residuals") + 
+  theme_bw()
+```
+
+There is random scatter and large residual value for low fitted values and the random scatter is decreasing as the fitted values are increased.
+
+###Nearly normal residuals: 
+To check this condition, we can look at a histogram of the residuals.
+```{r nearly normal residuals}
+ggplot(data = m_pf_aug, aes(x = .resid)) +
+  geom_histogram(binwidth = 0.25) +
+  xlab("Residuals") + 
+  theme_bw()
+```
+As histogram is approximately bell-shaped and centered around 0, I think the nearly normal residuals condition has not been violated.
+
+### Prediction
+```{r record}
+hfi %>% 
+  filter(countries == "United States" & year == 2016) %>% 
+  select(pf_score, pf_expression_influence, pf_expression_control)
+```
+
+```{r}
+hfi %>% 
+  filter(countries == "United States" & year == 2016) %>% 
+  predict(m_pf, .)
+```
+
+
+
+
+# Objective 2: Determine and apply the appropriate generalized linear model for a specific data context
+
+
+
+
+
+
+
+# Customer Churn Prediction
+## Introduction
+In this project, we will be analyzing a telecom churn dataset. The objective of the analysis is to develop a model to predict whether a customer will churn or not. The dataset consists of 7043 observations and 23 variables. The dataset contains a mix of categorical and continuous variables.
+
+Loading the required package and reading the dataset
+```{r}
+library(readxl)
+telecom_data <- read_excel("data/telecom-churn-rate-dataset.xlsx")
+#View(telecom_churn_rate_dataset)
+```
+
+Check the dimension of the dataset.
+Get the names of variables in the dataset
+```{r}
+dim(telecom_data)
+names(telecom_data)
+```
+
+Get the structure of the dataset.
+```{r}
+str(telecom_data)
+```
+There are 17 categorical (character) variables and 6 numeric variables in the dataset.
+
+Find the number of unique values in each variable:
+```{r}
+library(dplyr)
+sapply(telecom_data, n_distinct)
+```
+
+Check for missing values in the dataset:
+```{r}
+colSums(is.na(telecom_data))
+```
+The 'TotalCharges' variable shas 11 missing values
+
+Remove the observations having missing values.
+```{r}
+telecom_data <- na.omit(telecom_data)
+```
+
+
+Checking if there are any mising values again.
+```{r}
+colSums(is.na(telecom_data))
+```
+
+From this, we found that there are not any missing values.
+
+For the logistic regression, it is appropriate to convert categorical variables to factor. 
+Therefore, converting the categorical variables to factor.
+```{r}
+telecom_data[, sapply(telecom_data, is.character)] <- lapply(telecom_data[, sapply(telecom_data, is.character)], factor)
+
+```
+
+Checking whether the categorical variables are converted to factor or not:
+```{r}
+str(telecom_data)
+```
+
+Grouping customers by gender and finding the number of customers for each gender:
+```{r}
+library(magrittr)
+library(dplyr)
+customer_status <- telecom_data %>% group_by(gender) %>% summarise(num_customers = n())
+customer_status
+```
+From the table, we found that there are 3483 female customers and 3549 male customers.
+
+As 'Customer ID' variable is not related to the regression, so using variables except customerID variable.
+Removing customerID variable from the dataset:
+```{r}
+telecom_data <- select(telecom_data, -customerID)
+```
+
+Performing logistic regression with all the variables:
+```{r}
+logistic_reg1 <- glm(Churn ~ ., family = binomial, data = telecom_data)
+summary(logistic_reg1)
+```
+There are several values with multicollinearity and insignificantly large p-values.
+
+
+Considering only the variables having significant p-value.
+Performing logistic regression with significant variables only:
+```{r}
+logistic_reg <- glm(Churn ~ SeniorCitizen + tenure + MultipleLines + Contract + PaperlessBilling + TotalCharges + numTechTickets, family = binomial, data = telecom_data)
+summary(logistic_reg)
+```
+
+
+## Data Partition and Modelling
+In this chunk of code, the necessary packages are loaded, and the telecom data is partitioned into a training and testing set. The leave column is created as a factor with two levels, "Churn" and "Not Vhurn" and the "Churn" column is removed. The glm function from caret is used to fit a logistic regression model to the training set. The model's performance is then evaluated using confusion matrices for both the training and testing sets.
+```{r}
+library(caret)
+data_partition <- telecom_data
+#telecom_data$Churn = as.factor(telecom_data$Churn)
+data_partition$leave = ifelse(data_partition$Churn == "Yes","Churn","Not Churn")
+data_partition$leave = as.factor(data_partition$leave)
+data_partition = data_partition %>% dplyr::select(-Churn) #removing the column with numbers, otherwise the prediction is obvious
+
+set.seed(1)
+test.indices = createDataPartition(data_partition$leave, p = 0.2, list = FALSE) #classic 80/20 train-test partition
+test_partition = data_partition[test.indices,]
+train_partition = data_partition[-test.indices,]
+```
+
+
+The code fits a generalized linear model (GLM) using the train function from the caret package to predict customer churn based on seven predictor variables. The trained model is then used to generate churn predictions for both the training and test partitions.
+```{r}
+model_train = train(leave ~ SeniorCitizen + tenure + MultipleLines + Contract + PaperlessBilling + TotalCharges + numTechTickets, data = train_partition, method = "glm", family = binomial(link = "logit"))
+
+predTrain = predict(model_train, train_partition)
+predTest = predict(model_train, test_partition)
+```
+
+For Training data, the Confusion Matrix:
+```{r}
+confusionMatrix(predTrain, train_partition$leave, positive = "Churn")
+```
+
+We got 84.62% accuracy here.
+
+For Testing data, the Confusion Matrix:
+```{r}
+confusionMatrix(predTest, test_partition$leave, positive = "Churn")
+
+```
+For the testing data, the accuracy is little more than for the training data (84.86%) which is a good prediction.
+
+## Cross-validation
+
+In this chunk of code, a 15-fold cross-validation technique is applied to the logistic regression model previously built. The performance of the model is then printed. The model's performance is also evaluated using a confusion matrix on the testing set.
+
+```{r}
+train_control <- trainControl(method="cv", number=15) #15-fold cross validation
+model_cv <- caret::train(leave ~ SeniorCitizen + tenure + MultipleLines + Contract + PaperlessBilling + TotalCharges + numTechTickets, data=train_partition, trControl=train_control, method = "glm", family = binomial(link = "logit"))
+print(model_cv)
+```
+We got the accuracy of 84.45% which is less than that of data partition we did before.
+
+Now, finding the accuracy for the test data:
+```{r}
+predTest.cv <- predict(model_cv, test_partition)
+cmTest.cv = confusionMatrix(predTest.cv, test_partition$leave)
+cmTest.cv
+```
+The accuracy is 84.86% which is equal to that of normal data partition.
+
+Now finding the important variables for the model:
+```{r}
+importance <- varImp(model_train, scale=FALSE)
+plot(importance)
+```
+
+## Decision Tree
+In this chunk of code, the party package is loaded, and a decision tree is built using the ctree function. The model's performance is evaluated using confusion matrices for both the training and testing sets.
+
+```{r}
+library(party)
+tree <- ctree(leave~., data = train_partition)
+```
+
+```{r}
+treePredTrain <- predict(tree, train_partition, type = "response")
+
+confusionMatrix(treePredTrain,train_partition$leave)
+```
+We got the 86.6% accuracy using decision tree which is greater than others above.
+
+Finding accuracy on the test data:
+```{r}
+treePredTest <- predict(tree, test_partition, type = "response")
+
+confusionMatrix(treePredTest,test_partition$leave)
+```
+The accuracy we got is the largest till now: 84.72%.
+
+## Cross Validation: Decision Tree
+In this chunk of code, a 10-fold cross-validation technique is applied to the decision tree model previously built. The performance of the model is then printed. The model's performance is also evaluated using a confusion matrix on the testing set.
+
+Overall, the code performs data partitioning, logistic regression, cross-validation, and decision tree modeling on the telecom data set and evaluates the model's performance on the training and testing sets.
+```{r}
+train_control_tree <- trainControl(method="cv", number=15)
+model_tree <- caret::train(leave~., data=train_partition, trControl=train_control_tree, method="ctree")
+
+print(model_tree)
+```
+
+The final model had a mincriterion value of 0.99 and an accuracy of 0.8488913.
+
+```{r}
+predTest_tree <- predict(model_tree, test_partition)
+tree_cv = confusionMatrix(predTest_tree, test_partition$leave)
+tree_cv
+
+```
+
+However, the prediction on the test data decreases to 84.15%.
+
+
+Therefore, we are selecting decision tree with data partition into 80/20 (train/test) among logistic regression with data partition and cross validation and decision tree with data partition and cross validation.
+The selected model has 86.6% accuracy in train and 86.72% accuracy in the test data.
+
+
+
